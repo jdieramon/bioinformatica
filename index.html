@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bioinformática · Temas 1–2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --orange: #f0883e;
+    --cyan: #39d353;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --accent: #3fb950;
+    --drawer-w: 420px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    padding: 60px 40px 50px;
+    text-align: center;
+    background: linear-gradient(180deg, #0d1117 0%, #0f1e2d 100%);
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(63,185,80,.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 30%, rgba(88,166,255,.06) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .pill {
+    display: inline-block;
+    background: rgba(63,185,80,.12);
+    border: 1px solid rgba(63,185,80,.3);
+    color: var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: .08em;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 700;
+    letter-spacing: -.02em;
+    margin-bottom: 12px;
+    background: linear-gradient(135deg, #e6edf3 30%, #58a6ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p { color: var(--text-dim); font-size: 15px; max-width: 480px; margin: 0 auto 32px; line-height: 1.6; }
+  .hero-meta { display: flex; gap: 24px; justify-content: center; flex-wrap: wrap; }
+  .meta-item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-dim); }
+  .meta-item svg { flex-shrink: 0; }
+
+  /* ── TERMINAL ── */
+  .terminal-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    max-width: 640px;
+    margin: 32px auto 0;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  }
+  .terminal-header {
+    background: var(--surface2);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+  .terminal-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); margin-left: 8px; }
+  .terminal-body { padding: 16px 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8; }
+  .prompt { color: var(--green); }
+  .cmd { color: var(--text); }
+  .arg { color: var(--blue); }
+  .t-output { color: var(--cyan); }
+  .cursor { display: inline-block; width: 8px; height: 14px; background: var(--green); vertical-align: middle; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* ── SECTION ── */
+  .section { max-width: 960px; margin: 0 auto; padding: 48px 24px; }
+  .section-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px; }
+  .section-title { font-size: 22px; font-weight: 600; margin-bottom: 32px; color: var(--text); }
+
+  /* ── TOPIC CARD ── */
+  .topic-number { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); margin-bottom: 6px; letter-spacing: .05em; }
+  .topic-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px 20px;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .topic-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: linear-gradient(180deg, var(--green), var(--blue));
+  }
+  .topic-card.t2::before { background: linear-gradient(180deg, var(--purple), var(--blue)); }
+  .topic-card h2 { font-size: 18px; font-weight: 600; margin-bottom: 20px; padding-left: 14px; }
+
+  /* ── CONTENT GRID ── */
+  .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 16px; padding-left: 14px; }
+
+  .content-item {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    cursor: pointer;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+  }
+  .content-item:hover {
+    transform: translateY(-3px);
+    border-color: var(--item-color, var(--green));
+    box-shadow: 0 6px 24px rgba(0,0,0,.25);
+  }
+  .content-item.active {
+    border-color: var(--item-color, var(--green));
+    background: color-mix(in srgb, var(--item-color, var(--green)) 8%, var(--surface2));
+  }
+  .content-item .click-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    font-size: 10px;
+    color: var(--text-dim);
+    opacity: 0;
+    transition: opacity .2s;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .content-item:hover .click-hint { opacity: 1; }
+
+  .item-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; font-size: 20px; }
+  .item-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+  .item-desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+  .item-desc code { font-family: 'JetBrains Mono', monospace; font-size: 11px; background: rgba(255,255,255,.07); padding: 1px 4px; border-radius: 3px; }
+
+  .ic-green  { background: rgba(63,185,80,.15); }
+  .ic-blue   { background: rgba(88,166,255,.15); }
+  .ic-purple { background: rgba(188,140,255,.15); }
+  .ic-orange { background: rgba(240,136,62,.15); }
+  .ic-cyan   { background: rgba(57,211,83,.15); }
+
+  /* ── COMMANDS TABLE ── */
+  .commands-section { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-top: 16px; overflow: hidden; }
+  .commands-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; background: var(--surface2); }
+  .commands-header span { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-dim); }
+  .commands-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .commands-table th { text-align: left; padding: 10px 20px; color: var(--text-dim); font-weight: 500; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; border-bottom: 1px solid var(--border); background: rgba(255,255,255,.02); }
+  .commands-table td { padding: 12px 20px; border-bottom: 1px solid rgba(48,54,61,.5); vertical-align: top; }
+  .commands-table tr:last-child td { border-bottom: none; }
+  .commands-table tr:hover td { background: rgba(255,255,255,.02); }
+  .cmd-name { font-family: 'JetBrains Mono', monospace; color: var(--green); font-size: 13px; white-space: nowrap; }
+  .cmd-syntax { font-family: 'JetBrains Mono', monospace; color: var(--blue); font-size: 12px; white-space: nowrap; }
+  .cmd-desc { color: var(--text-dim); font-size: 12px; line-height: 1.5; }
+  .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+  .badge-nav    { background: rgba(63,185,80,.15);  color: var(--green); }
+  .badge-file   { background: rgba(88,166,255,.15); color: var(--blue); }
+  .badge-view   { background: rgba(188,140,255,.15);color: var(--purple); }
+  .badge-redir  { background: rgba(240,136,62,.15); color: var(--orange); }
+  .badge-search { background: rgba(57,211,83,.15);  color: var(--cyan); }
+
+  /* ── DRAWER OVERLAY ── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s;
+    backdrop-filter: blur(2px);
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+
+  /* ── DRAWER PANEL ── */
+  .drawer {
+    position: fixed;
+    top: 0; right: 0;
+    width: min(var(--drawer-w), 100vw);
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 101;
+    transform: translateX(100%);
+    transition: transform .35s cubic-bezier(.4,0,.2,1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .drawer.open { transform: translateX(0); }
+
+  .drawer-top {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    flex-shrink: 0;
+  }
+  .drawer-topic-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .drawer-title { font-size: 17px; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+  .drawer-close {
+    position: absolute;
+    top: 18px; right: 20px;
+    width: 30px; height: 30px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 16px;
+    transition: background .15s, color .15s;
+  }
+  .drawer-close:hover { background: var(--border); color: var(--text); }
+
+  .drawer-body { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+
+  /* drawer sections */
+  .d-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .d-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .d-desc { font-size: 14px; color: var(--text-dim); line-height: 1.7; }
+
+  /* concept chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+  }
+
+  /* mini command list */
+  .cmd-list { display: flex; flex-direction: column; gap: 8px; }
+  .cmd-row {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .cmd-row .cr-name { font-family: 'JetBrains Mono', monospace; color: var(--green); font-size: 13px; flex-shrink: 0; min-width: 80px; }
+  .cmd-row.r-purple .cr-name { color: var(--purple); }
+  .cmd-row .cr-desc { font-size: 12px; color: var(--text-dim); line-height: 1.4; }
+
+  /* mini terminal */
+  .mini-term {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .mini-term-header {
+    background: var(--surface2);
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .mini-term-header span { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); margin-left: 6px; }
+  .mini-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .mini-term-body { padding: 14px 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.8; }
+  .mt-prompt { color: var(--green); }
+  .mt-rprompt { color: #6e9ef1; }
+  .mt-cmd { color: var(--text); }
+  .mt-arg { color: var(--blue); }
+  .mt-out { color: var(--cyan); }
+  .mt-comment { color: var(--text-dim); }
+  .mt-rout { color: var(--orange); }
+  .mt-rfunc { color: var(--purple); }
+  .mt-rstr { color: #a5d6ff; }
+
+  /* ── FOOTER ── */
+  footer { border-top: 1px solid var(--border); padding: 24px; text-align: center; font-size: 12px; color: var(--text-dim); font-family: 'JetBrains Mono', monospace; }
+
+  /* ── SCROLL ANIMATION ── */
+  .fade-in { opacity: 0; transform: translateY(18px); transition: opacity .5s ease, transform .5s ease; }
+  .fade-in.visible { opacity: 1; transform: none; }
+
+  /* scrollbar */
+  .drawer-body::-webkit-scrollbar { width: 6px; }
+  .drawer-body::-webkit-scrollbar-track { background: transparent; }
+  .drawer-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="pill">Guía Docente Visual</div>
+  <h1>Bioinformática</h1>
+  <p>Haz clic en cualquier tarjeta para ver descripción, conceptos clave y ejemplos de código.</p>
+  <div class="hero-meta">
+    <div class="meta-item">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Grado en Bioquímica / Biología
+    </div>
+    <div class="meta-item">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Curso 2025–2026
+    </div>
+    <div class="meta-item">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      6 temas cargados
+    </div>
+  </div>
+  <div class="terminal-bar">
+    <div class="terminal-header">
+      <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+      <span class="terminal-title">bash — bioinformatica@uco</span>
+    </div>
+    <div class="terminal-body">
+      <div><span class="prompt">user@bio:~$</span> <span class="cmd">grep</span> <span class="arg">-c "^>" genoma_humano.fasta</span></div>
+      <div><span class="t-output">24</span></div>
+      <div><span class="prompt">user@bio:~$</span> <span class="cmd">cat</span> <span class="arg">expresion.tsv</span> <span class="cmd">|</span> <span class="cmd">sort</span> <span class="arg">-k2 -rn</span> <span class="cmd">|</span> <span class="cmd">head</span> <span class="arg">-5</span></div>
+      <div><span class="t-output">BRCA1   284.3</span></div>
+      <div><span class="prompt">user@bio:~$</span> <span class="cursor"></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONTENIDO ── -->
+<div class="section">
+  <div class="section-label">// Bloque I</div>
+  <div class="section-title">Herramientas computacionales</div>
+
+  <!-- TEMA 1 -->
+  <div class="topic-card fade-in">
+    <div class="topic-number">TEMA 01</div>
+    <h2>Terminal de comando en LINUX</h2>
+    <div class="content-grid">
+
+      <div class="content-item fade-in" style="--item-color: var(--green)"
+        data-topic="TEMA 01 · Linux"
+        data-title="Navegación por el sistema de ficheros"
+        data-color="green"
+        data-desc="El sistema de archivos de Linux tiene estructura de árbol que parte de la raíz /. Puedes moverte entre directorios usando rutas absolutas (desde /) o relativas (desde el directorio actual). El símbolo ~ representa siempre tu directorio personal."
+        data-chips="ruta absoluta|ruta relativa|directorio raíz /|directorio home ~|. (actual)|.. (padre)"
+        data-cmds="pwd:Imprime el directorio actual|cd /ruta:Cambia al directorio indicado|cd ~:Va al directorio personal|cd ..:Sube un nivel|ls:Lista el contenido|ls -lh:Lista con permisos y tamaños legibles"
+        data-lang="bash"
+        data-example="$ pwd
+/home/usuario
+
+$ cd /datos/genomica/secuencias
+$ pwd
+/datos/genomica/secuencias
+
+$ ls -lh
+total 2,1G
+-rw-r--r-- genoma_humano.fasta   1,8G
+-rw-r--r-- anotaciones.gff        342M">
+        <div class="item-icon ic-green">🗂️</div>
+        <div class="item-title">Navegación por el sistema de ficheros</div>
+        <div class="item-desc">Estructura de árbol en Linux. Rutas absolutas y relativas. Comandos <code>pwd</code>, <code>cd</code>, <code>ls</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--blue)"
+        data-topic="TEMA 01 · Linux"
+        data-title="Gestión de archivos y directorios"
+        data-color="blue"
+        data-desc="Operaciones esenciales para organizar el espacio de trabajo: crear carpetas, copiar y mover datos entre directorios y eliminar archivos. ¡Cuidado con rm -rf: es irreversible y no hay papelera!"
+        data-chips="mkdir|cp|mv|rm|touch|chmod"
+        data-cmds="mkdir -p proyecto/raw:Crea directorios anidados|cp -r dir/ destino/:Copia directorio completo|mv archivo.txt nuevo.txt:Mueve o renombra|rm -f archivo:Elimina sin confirmación|touch nuevo.txt:Crea archivo vacío"
+        data-lang="bash"
+        data-example="$ mkdir -p proyecto/datos/raw proyecto/resultados
+
+$ cp secuencia.fasta proyecto/datos/raw/
+$ ls proyecto/datos/raw/
+secuencia.fasta
+
+$ mv resultado_v1.txt resultado_final.txt
+
+$ rm -f temporal.tmp">
+        <div class="item-icon ic-blue">📁</div>
+        <div class="item-title">Gestión de archivos y directorios</div>
+        <div class="item-desc">Crear, copiar, mover y eliminar. Comandos <code>mkdir</code>, <code>cp</code>, <code>mv</code>, <code>rm</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--purple)"
+        data-topic="TEMA 01 · Linux"
+        data-title="Visualización y exploración de archivos"
+        data-color="purple"
+        data-desc="Herramientas para leer ficheros de texto sin editarlos. Fundamentales en bioinformática para explorar archivos FASTA, FASTQ, VCF o tablas de expresión génica que pueden tener millones de líneas."
+        data-chips="cat|less|head|tail|wc|more"
+        data-cmds="cat archivo.fasta:Muestra todo el contenido|less archivo.fastq:Paginador interactivo (q para salir)|head -5 genes.txt:Primeras 5 líneas|tail -20 log.txt:Últimas 20 líneas|wc -l tabla.tsv:Cuenta el número de líneas"
+        data-lang="bash"
+        data-example="$ head -4 genoma.fasta
+>chr1 Homo sapiens chromosome 1
+ATGCGATCGATCGATCGATCGATCG
+>chr2 Homo sapiens chromosome 2
+GCTAGCTAGCTAGCTAGCTAGCTAG
+
+$ wc -l anotaciones.gff
+42381 anotaciones.gff
+
+$ tail -3 expresion.tsv
+TP53    12.4    8.1    6.3
+EGFR     5.2    9.8   11.0
+MYC     18.7   22.1   19.4">
+        <div class="item-icon ic-purple">👁️</div>
+        <div class="item-title">Visualización y exploración de archivos</div>
+        <div class="item-desc">Explorar sin editar. Comandos <code>cat</code>, <code>less</code>, <code>head</code>, <code>tail</code>, <code>wc</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--orange)"
+        data-topic="TEMA 01 · Linux"
+        data-title="Redirección de entrada y salida"
+        data-color="orange"
+        data-desc="Cada comando tiene tres flujos de datos: entrada estándar (stdin), salida estándar (stdout) y error (stderr). Los operadores de redirección permiten encadenar comandos en pipelines o guardar resultados directamente en archivos."
+        data-chips="> (sobreescribe)|>> (añade)|< (stdin)|| (pipe)|2> (stderr)|&> (ambos)"
+        data-cmds="cmd > archivo.txt:Guarda la salida en un archivo|cmd >> archivo.txt:Añade al final del archivo|cmd1 | cmd2:Envía salida de cmd1 a cmd2|cmd < entrada.txt:Usa archivo como entrada|cmd 2> errores.log:Redirige errores"
+        data-lang="bash"
+        data-example="# Guardar cabeceras de un FASTA
+$ grep '>' genoma.fasta > cabeceras.txt
+
+# Pipeline: ordenar y eliminar duplicados
+$ cat genes.txt | sort | uniq > genes_unicos.txt
+
+# Contar secuencias en múltiples archivos
+$ for f in *.fasta; do
+    echo -n '$f: '
+    grep -c '>' $f
+  done > resumen.txt">
+        <div class="item-icon ic-orange">↔️</div>
+        <div class="item-title">Redirección de entrada y salida</div>
+        <div class="item-desc">Operadores <code>&gt;</code>, <code>&gt;&gt;</code>, <code>&lt;</code> y <code>|</code> para encadenar comandos.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--cyan)"
+        data-topic="TEMA 01 · Linux"
+        data-title="Búsqueda y consulta en archivos"
+        data-color="cyan"
+        data-desc="Comandos especializados en localizar archivos en el sistema de ficheros y buscar patrones de texto dentro de ellos. Imprescindibles para trabajar con grandes volúmenes de datos biológicos."
+        data-chips="grep|find|wc|sort|cut|awk"
+        data-cmds="grep -c 'ATG' archivo:Cuenta líneas con coincidencia|grep -v '#' archivo:Excluye líneas con ese patrón|find . -name '*.fasta':Busca archivos por nombre|find . -size +100M:Archivos mayores de 100 MB|sort -k2 -rn tabla.tsv:Ordena por columna 2 descendente|cut -f1,3 tabla.tsv:Extrae columnas 1 y 3"
+        data-lang="bash"
+        data-example="# Número de secuencias en un FASTA
+$ grep -c '^>' genoma.fasta
+24
+
+# Filtrar líneas de comentario en un VCF
+$ grep -v '^#' variantes.vcf | wc -l
+18423
+
+# Buscar todos los FASTQ grandes
+$ find /datos -name '*.fastq.gz' -size +500M
+
+# Top 5 genes más expresados
+$ sort -k2 -rn expresion.tsv | head -5">
+        <div class="item-icon ic-cyan">🔍</div>
+        <div class="item-title">Búsqueda y consulta en archivos</div>
+        <div class="item-desc">Patrones de texto y localización. Comandos <code>grep</code>, <code>find</code>, <code>sort</code>, <code>cut</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TABLA TEMA 1 -->
+  <div class="commands-section fade-in">
+    <div class="commands-header">
+      <svg width="14" height="14" fill="none" stroke="#8b949e" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <span>Comandos esenciales · Tema 1</span>
+    </div>
+    <table class="commands-table">
+      <thead><tr><th>Comando</th><th>Sintaxis</th><th>Descripción</th><th>Bloque</th></tr></thead>
+      <tbody>
+        <tr><td><span class="cmd-name">pwd</span></td><td><span class="cmd-syntax">pwd</span></td><td class="cmd-desc">Muestra la ruta del directorio actual</td><td><span class="badge badge-nav">navegación</span></td></tr>
+        <tr><td><span class="cmd-name">cd</span></td><td><span class="cmd-syntax">cd [ruta]</span></td><td class="cmd-desc">Cambia de directorio</td><td><span class="badge badge-nav">navegación</span></td></tr>
+        <tr><td><span class="cmd-name">ls</span></td><td><span class="cmd-syntax">ls [-lh] [ruta]</span></td><td class="cmd-desc">Lista el contenido de un directorio</td><td><span class="badge badge-nav">navegación</span></td></tr>
+        <tr><td><span class="cmd-name">mkdir</span></td><td><span class="cmd-syntax">mkdir [-p] nombre</span></td><td class="cmd-desc">Crea un directorio (con -p crea intermedios)</td><td><span class="badge badge-file">archivos</span></td></tr>
+        <tr><td><span class="cmd-name">cp</span></td><td><span class="cmd-syntax">cp [-r] origen destino</span></td><td class="cmd-desc">Copia archivos o directorios</td><td><span class="badge badge-file">archivos</span></td></tr>
+        <tr><td><span class="cmd-name">mv</span></td><td><span class="cmd-syntax">mv origen destino</span></td><td class="cmd-desc">Mueve o renombra archivos</td><td><span class="badge badge-file">archivos</span></td></tr>
+        <tr><td><span class="cmd-name">rm</span></td><td><span class="cmd-syntax">rm [-rf] archivo</span></td><td class="cmd-desc">Elimina archivos o directorios (irreversible)</td><td><span class="badge badge-file">archivos</span></td></tr>
+        <tr><td><span class="cmd-name">cat / less</span></td><td><span class="cmd-syntax">cat archivo</span></td><td class="cmd-desc">Muestra contenido completo / paginado</td><td><span class="badge badge-view">visualización</span></td></tr>
+        <tr><td><span class="cmd-name">head / tail</span></td><td><span class="cmd-syntax">head [-n N] archivo</span></td><td class="cmd-desc">Primeras / últimas N líneas</td><td><span class="badge badge-view">visualización</span></td></tr>
+        <tr><td><span class="cmd-name">&gt;  &gt;&gt;  |</span></td><td><span class="cmd-syntax">cmd &gt; archivo</span></td><td class="cmd-desc">Redirige la salida a archivo o a otro comando</td><td><span class="badge badge-redir">redirección</span></td></tr>
+        <tr><td><span class="cmd-name">grep</span></td><td><span class="cmd-syntax">grep [-cv] patrón file</span></td><td class="cmd-desc">Busca líneas que coincidan con un patrón</td><td><span class="badge badge-search">búsqueda</span></td></tr>
+        <tr><td><span class="cmd-name">find</span></td><td><span class="cmd-syntax">find ruta -name "*.fa"</span></td><td class="cmd-desc">Localiza archivos por nombre o atributos</td><td><span class="badge badge-search">búsqueda</span></td></tr>
+        <tr><td><span class="cmd-name">wc / sort</span></td><td><span class="cmd-syntax">wc -l archivo</span></td><td class="cmd-desc">Cuenta líneas · ordena contenido</td><td><span class="badge badge-search">búsqueda</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TEMA 2 -->
+  <div class="topic-card t2 fade-in" style="margin-top: 56px;">
+    <div class="topic-number">TEMA 02</div>
+    <h2>Programación R</h2>
+    <div class="content-grid">
+
+      <div class="content-item fade-in" style="--item-color: var(--purple)"
+        data-topic="TEMA 02 · R"
+        data-title="Introducción a R y RStudio"
+        data-color="purple"
+        data-lang="r"
+        data-desc="RStudio organiza el trabajo en 4 paneles: Editor de scripts (arriba izquierda), Consola (abajo izquierda), Entorno e Historia (arriba derecha), y Archivos/Gráficos/Ayuda (abajo derecha). Puedes ejecutar código línea a línea o el script completo."
+        data-chips="script .R|consola interactiva|Rmarkdown|workspace|panel Environment|panel Plots"
+        data-cmds="Ctrl+Enter:Ejecuta la línea actual|Ctrl+Shift+Enter:Ejecuta el script completo|source('mi.R'):Carga y ejecuta un script|getwd():Muestra el directorio de trabajo|setwd('/ruta'):Cambia el directorio de trabajo"
+        data-example="# Operaciones básicas en consola
+x <- c(1, 2, 3, 4, 5)
+mean(x)      # [1] 3
+sd(x)        # [1] 1.581139
+
+# Ejecutar un script externo
+source('analisis_expresion.R')
+
+# Ver el entorno de trabajo
+ls()         # variables en memoria
+rm(list=ls()) # limpiar entorno">
+        <div class="item-icon ic-purple">🖥️</div>
+        <div class="item-title">Introducción a R y RStudio</div>
+        <div class="item-desc">Entorno de trabajo, paneles de RStudio y ejecución de scripts <code>.R</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--blue)"
+        data-topic="TEMA 02 · R"
+        data-title="Funciones, paquetes y ecosistema de R"
+        data-color="blue"
+        data-lang="r"
+        data-desc="R tiene más de 20.000 paquetes en CRAN y miles más en Bioconductor (especializados en bioinformática). El tidyverse agrupa los más usados para análisis de datos: dplyr (manipulación), ggplot2 (visualización), tidyr (transformación) y readr (importación)."
+        data-chips="CRAN|Bioconductor|tidyverse|dplyr|ggplot2|tidyr|readr|purrr"
+        data-cmds="install.packages('pkg'):Instala desde CRAN|BiocManager::install('pkg'):Instala desde Bioconductor|library(pkg):Carga paquete en sesión|function(x) { ... }:Define una función propia|?funcion:Abre la ayuda"
+        data-example="# Instalar y cargar el tidyverse
+install.packages('tidyverse')
+library(tidyverse)
+
+# Definir una función propia
+normalizar <- function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}
+
+# Aplicarla a un vector
+expresion <- c(12.3, 5.6, 8.9, 22.1)
+normalizar(expresion)
+# [1] 0.000 0.301 0.200 1.000">
+        <div class="item-icon ic-blue">📦</div>
+        <div class="item-title">Funciones, paquetes y ecosistema</div>
+        <div class="item-desc">CRAN, Bioconductor, tidyverse. <code>install.packages()</code>, <code>library()</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--green)"
+        data-topic="TEMA 02 · R"
+        data-title="Principios de tidy data"
+        data-color="green"
+        data-lang="r"
+        data-desc="Datos ordenados (tidy data) siguen tres reglas: cada variable ocupa una columna, cada observación ocupa una fila y cada valor ocupa una celda. Este formato es el esperado por ggplot2, dplyr y la mayoría del ecosistema tidyverse, y facilita el análisis biológico de tablas de expresión, metadatos de muestras, etc."
+        data-chips="variable → columna|observación → fila|valor → celda|pivot_longer|pivot_wider|tidyr"
+        data-cmds="pivot_longer(df, cols):Convierte a formato largo (tidy)|pivot_wider(df, ...):Convierte a formato ancho|separate(col, into):Divide una columna en varias|unite(col1, col2):Une varias columnas en una"
+        data-example="# Datos en formato ancho (no tidy)
+#   muestra  gen_A  gen_B  gen_C
+#   ctrl_1    12.3    5.6    8.9
+#   ctrl_2     9.1    7.2   10.4
+
+# Convertir a formato tidy (largo)
+df_tidy <- df |>
+  pivot_longer(
+    cols      = starts_with('gen_'),
+    names_to  = 'gen',
+    values_to = 'expresion'
+  )
+
+# Resultado tidy:
+#   muestra  gen    expresion
+#   ctrl_1   gen_A   12.3
+#   ctrl_1   gen_B    5.6  ...">
+        <div class="item-icon ic-green">🧹</div>
+        <div class="item-title">Principios de tidy data</div>
+        <div class="item-desc">Datos ordenados para análisis biológico. <code>pivot_longer()</code>, <code>pivot_wider()</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--orange)"
+        data-topic="TEMA 02 · R"
+        data-title="Estructuras de datos en R"
+        data-color="orange"
+        data-lang="r"
+        data-desc="Las estructuras básicas de R son: el vector (secuencia de valores del mismo tipo), la matrix (vector en 2D para álgebra), el data.frame (tabla con columnas de distintos tipos) y el tibble (data.frame moderno del tidyverse con mejor comportamiento por defecto)."
+        data-chips="vector|matrix|data.frame|tibble|lista|factor"
+        data-cmds="c(1, 2, 3):Crea un vector numérico|matrix(data, nrow, ncol):Crea una matriz|data.frame(col1, col2):Tabla clásica|tibble(col = val):Tabla moderna (tidyverse)|df[df$col > 5, ]:Filtra filas por condición|df$columna:Accede a una columna"
+        data-example="# Vector
+genes <- c('BRCA1', 'TP53', 'EGFR')
+expr  <- c(12.3, 5.6, 8.9)
+
+# data.frame
+df <- data.frame(gen = genes,
+                 expresion = expr)
+
+# Filtrar genes con expresion > 8
+df[df$expresion > 8, ]
+#    gen  expresion
+# 1 BRCA1      12.3
+# 3  EGFR       8.9
+
+# Matriz de correlaciones
+m <- matrix(runif(9), nrow=3)
+cor(m)">
+        <div class="item-icon ic-orange">🧮</div>
+        <div class="item-title">Estructuras de datos en R</div>
+        <div class="item-desc">Vectores, <code>data.frame</code>, <code>tibble</code> y matrices. Indexación y filtrado.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--cyan)"
+        data-topic="TEMA 02 · R"
+        data-title="Importación y exportación de datos"
+        data-color="cyan"
+        data-lang="r"
+        data-desc="readr (parte del tidyverse) es más rápido y robusto que las funciones base de R. Para datos biológicos existen paquetes especializados: rtracklayer (GFF, BED), Rsamtools (BAM), y VariantAnnotation (VCF). El paquete readxl permite importar Excel directamente."
+        data-chips="read_csv|read_tsv|write_csv|readxl|rtracklayer|Rsamtools"
+        data-cmds="read_csv('datos.csv'):Importa CSV (tidyverse)|read_tsv('datos.tsv'):Importa TSV (tabulador)|read.table('f.txt', header=T):Importa tabla genérica|write_csv(df, 'out.csv'):Exporta a CSV|saveRDS(obj, 'obj.rds'):Guarda objeto R|readRDS('obj.rds'):Carga objeto R"
+        data-example="library(readr)
+
+# Importar tabla de expresión
+expr <- read_tsv('expresion_diferencial.tsv',
+                  col_types = cols(
+                    gen       = col_character(),
+                    log2FC    = col_double(),
+                    pval_adj  = col_double()
+                  ))
+
+# Filtrar significativos y exportar
+significativos <- expr |>
+  filter(pval_adj < 0.05, abs(log2FC) > 1)
+
+write_csv(significativos, 'genes_DE.csv')
+message(nrow(significativos), ' genes DE encontrados')">
+        <div class="item-icon ic-cyan">📂</div>
+        <div class="item-title">Importación y exportación de datos</div>
+        <div class="item-desc">Ficheros CSV, TSV y formatos biológicos. <code>read_csv()</code>, <code>write_csv()</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TABLA TEMA 2 -->
+  <div class="commands-section fade-in">
+    <div class="commands-header">
+      <svg width="14" height="14" fill="none" stroke="#8b949e" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <span>Funciones esenciales · Tema 2</span>
+    </div>
+    <table class="commands-table">
+      <thead><tr><th>Función</th><th>Sintaxis</th><th>Descripción</th><th>Bloque</th></tr></thead>
+      <tbody>
+        <tr><td><span class="cmd-name">install.packages</span></td><td><span class="cmd-syntax">install.packages("pkg")</span></td><td class="cmd-desc">Instala un paquete desde CRAN</td><td><span class="badge badge-nav">paquetes</span></td></tr>
+        <tr><td><span class="cmd-name">library</span></td><td><span class="cmd-syntax">library(pkg)</span></td><td class="cmd-desc">Carga un paquete en la sesión actual</td><td><span class="badge badge-nav">paquetes</span></td></tr>
+        <tr><td><span class="cmd-name">c</span></td><td><span class="cmd-syntax">c(1, 2, 3)</span></td><td class="cmd-desc">Crea un vector</td><td><span class="badge badge-view">estructuras</span></td></tr>
+        <tr><td><span class="cmd-name">data.frame</span></td><td><span class="cmd-syntax">data.frame(col1, col2)</span></td><td class="cmd-desc">Crea una tabla de datos</td><td><span class="badge badge-view">estructuras</span></td></tr>
+        <tr><td><span class="cmd-name">matrix</span></td><td><span class="cmd-syntax">matrix(data, nrow, ncol)</span></td><td class="cmd-desc">Crea una matriz numérica</td><td><span class="badge badge-view">estructuras</span></td></tr>
+        <tr><td><span class="cmd-name">tibble</span></td><td><span class="cmd-syntax">tibble(col = valores)</span></td><td class="cmd-desc">Tabla moderna del tidyverse</td><td><span class="badge badge-search">tidy data</span></td></tr>
+        <tr><td><span class="cmd-name">pivot_longer</span></td><td><span class="cmd-syntax">pivot_longer(df, cols)</span></td><td class="cmd-desc">Transforma a formato largo (tidy)</td><td><span class="badge badge-search">tidy data</span></td></tr>
+        <tr><td><span class="cmd-name">read_csv</span></td><td><span class="cmd-syntax">read_csv("file.csv")</span></td><td class="cmd-desc">Importa un CSV con readr</td><td><span class="badge badge-file">I/O</span></td></tr>
+        <tr><td><span class="cmd-name">read_tsv</span></td><td><span class="cmd-syntax">read_tsv("file.tsv")</span></td><td class="cmd-desc">Importa archivo separado por tabuladores</td><td><span class="badge badge-file">I/O</span></td></tr>
+        <tr><td><span class="cmd-name">write_csv</span></td><td><span class="cmd-syntax">write_csv(df, "file.csv")</span></td><td class="cmd-desc">Exporta un tibble/data.frame a CSV</td><td><span class="badge badge-file">I/O</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ── EXTRA CSS FOR T3-T6 ── -->
+<style>
+  .t3::before { background: linear-gradient(180deg, var(--blue), var(--cyan)); }
+  .t4::before { background: linear-gradient(180deg, var(--cyan), var(--green)); }
+  .t5::before { background: linear-gradient(180deg, var(--orange), #ffd166); }
+  .t6::before { background: linear-gradient(180deg, #f85149, var(--orange)); }
+</style>
+
+<!-- ── BLOQUE II ── -->
+<div class="section" style="padding-top: 0;">
+  <div class="section-label">// Bloque II</div>
+  <div class="section-title">Análisis bioinformático en R</div>
+
+  <!-- TEMA 3 -->
+  <div class="topic-card t3 fade-in">
+    <div class="topic-number">TEMA 03</div>
+    <h2>Bioconductor para análisis bioinformático en R</h2>
+    <div class="content-grid">
+
+      <div class="content-item fade-in" style="--item-color: var(--blue)"
+        data-topic="TEMA 03 · Bioconductor"
+        data-title="Introducción a Bioconductor"
+        data-color="blue" data-lang="r"
+        data-desc="Bioconductor es un proyecto de software libre para el análisis de datos genómicos de alta producción. Basado en R, ofrece más de 2.200 paquetes especializados. Su filosofía se apoya en tres pilares: reproducibilidad (workflows documentados), interoperabilidad (estructuras de datos comunes) y acceso abierto."
+        data-chips="Bioconductor|reproducibilidad|BiocManager|release|devel|workflows|CRAN vs Bioc"
+        data-cmds="install.packages('BiocManager'):Instala el gestor de Bioconductor|BiocManager::version():Versión activa de Bioconductor|BiocManager::available():Lista paquetes disponibles|browseVignettes('pkg'):Abre las vignettes del paquete"
+        data-example="# Paso 1: instalar BiocManager
+install.packages('BiocManager')
+
+# Paso 2: instalar paquetes clave
+BiocManager::install(c(
+  'DESeq2',        # expresión diferencial
+  'GenomicRanges', # coordenadas genómicas
+  'Biostrings',    # manipulación de secuencias
+  'edgeR'          # conteos RNA-seq
+))
+
+# Ver versión del ecosistema
+BiocManager::version()   # ej. '3.19'">
+        <div class="item-icon ic-blue">🧬</div>
+        <div class="item-title">Introducción a Bioconductor</div>
+        <div class="item-desc">Ecosistema, filosofía de análisis reproducible y más de 2.200 paquetes bioinformáticos.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--purple)"
+        data-topic="TEMA 03 · Bioconductor"
+        data-title="Instalación y gestión de paquetes"
+        data-color="purple" data-lang="r"
+        data-desc="Bioconductor tiene ciclos de release semestrales sincronizados con versiones de R. BiocManager gestiona la instalación, actualización y comprobación de compatibilidad. Es importante usar la versión de Bioconductor que corresponde a tu versión de R para evitar conflictos."
+        data-chips="BiocManager|release|devel|compatibilidad|sessionInfo|dependencias|NAMESPACE"
+        data-cmds="BiocManager::install('DESeq2'):Instala DESeq2|BiocManager::valid():Comprueba compatibilidad|BiocManager::update():Actualiza todos los paquetes|installed.packages():Lista paquetes instalados|sessionInfo():Información completa de sesión"
+        data-example="# Comprobar compatibilidad de todos los paquetes
+BiocManager::valid()
+
+# Actualizar paquetes desactualizados
+BiocManager::update()
+
+# Ver qué versión de R / Bioc necesitas
+BiocManager::install(version = '3.19')
+
+# Información reproducible de sesión
+sessionInfo()
+# R version 4.4.0
+# Bioconductor version 3.19
+# ...">
+        <div class="item-icon ic-purple">⚙️</div>
+        <div class="item-title">Instalación y gestión de paquetes</div>
+        <div class="item-desc">Ciclos release/devel, <code>BiocManager::install()</code>, compatibilidad con versiones de R.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--orange)"
+        data-topic="TEMA 03 · Bioconductor"
+        data-title="SummarizedExperiment y objetos S4"
+        data-color="orange" data-lang="r"
+        data-desc="SummarizedExperiment es la estructura central de Bioconductor: integra en un solo objeto la matriz de conteos (assays), los metadatos de muestras (colData) y los metadatos de genes (rowData). Los objetos S4 son el sistema de programación orientada a objetos de R utilizado en todo Bioconductor."
+        data-chips="SummarizedExperiment|assays|colData|rowData|S4|DESeqDataSet|SingleCellExperiment"
+        data-cmds="assay(se):Accede a la matriz de datos|colData(se):Metadatos de muestras|rowData(se):Metadatos de genes|dim(se):Dimensiones (genes × muestras)|se[1:100, 1:6]:Subconjunto del objeto"
+        data-example="library(SummarizedExperiment)
+
+se <- SummarizedExperiment(
+  assays  = list(counts = matriz_conteos),
+  colData = DataFrame(
+    muestra   = colnames(matriz_conteos),
+    condicion = c('ctrl','ctrl','trat','trat')
+  ),
+  rowData = DataFrame(gen = rownames(matriz_conteos))
+)
+
+# Acceder a componentes
+assay(se, 'counts')[1:3, 1:4]
+colData(se)$condicion
+dim(se)    # 20000 genes × 4 muestras">
+        <div class="item-icon ic-orange">🏗️</div>
+        <div class="item-title">SummarizedExperiment y objetos S4</div>
+        <div class="item-desc">Estructura central de Bioconductor: <code>assays</code>, <code>colData</code>, <code>rowData</code> en un mismo objeto.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--cyan)"
+        data-topic="TEMA 03 · Bioconductor"
+        data-title="Vignettes y documentación"
+        data-color="cyan" data-lang="r"
+        data-desc="Las vignettes son documentos reproducibles (HTML o PDF) incluidos en cada paquete de Bioconductor que guían al usuario por análisis típicos con código ejecutable. Son la forma recomendada de aprender un paquete nuevo. Los workflows de Bioconductor integran múltiples paquetes en análisis completos."
+        data-chips="vignette|browseVignettes|workflow|Rmarkdown|reproducibilidad|BiocWorkflowTools|pkgdown"
+        data-cmds="browseVignettes('DESeq2'):Abre vignettes de DESeq2|vignette('DESeq2'):Vignette principal|?DESeqDataSetFromMatrix:Ayuda de función|example(DESeq):Ejecuta ejemplos integrados|help(package='DESeq2'):Índice del paquete"
+        data-example="# Ver todas las vignettes de un paquete
+browseVignettes('DESeq2')
+
+# Abrir vignette específica
+vignette('DESeq2', package = 'DESeq2')
+
+# Ayuda de una función
+?DESeqDataSetFromMatrix
+
+# Ejecutar el ejemplo del paquete
+example('plotMA')
+
+# Workflow completo RNA-seq (Bioconductor)
+# https://bioconductor.org/workflows/">
+        <div class="item-icon ic-cyan">📖</div>
+        <div class="item-title">Vignettes y documentación</div>
+        <div class="item-desc">Aprendizaje guiado con código reproducible. <code>browseVignettes()</code>, workflows de Bioconductor.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--green)"
+        data-topic="TEMA 03 · Bioconductor"
+        data-title="Aplicaciones prácticas"
+        data-color="green" data-lang="r"
+        data-desc="Bioconductor cubre el flujo de trabajo bioinformático completo: QC (FastQC, MultiQC), alineamiento (Rsubread), cuantificación (featureCounts), análisis diferencial (DESeq2, edgeR), visualización (ggplot2, ComplexHeatmap) y anotación (AnnotationDbi, org.Hs.eg.db)."
+        data-chips="DESeq2|edgeR|limma|Rsubread|AnnotationDbi|ComplexHeatmap|clusterProfiler|GSEA"
+        data-cmds="DESeq(dds):Análisis diferencial completo|results(dds):Extrae tabla de resultados|plotMA(res):MA-plot|vst(dds):Transformación varianza estable|plotPCA(vsd):Análisis de componentes principales"
+        data-example="library(DESeq2)
+
+dds <- DESeqDataSetFromMatrix(
+  countData = conteos,
+  colData   = muestras,
+  design    = ~ condicion
+)
+
+# Análisis completo en una línea
+dds <- DESeq(dds)
+res <- results(dds, alpha = 0.05)
+
+# Resumen
+summary(res)
+# genes con padj < 0.05: 1243 (up: 687, down: 556)
+
+# Visualización
+plotMA(res, ylim = c(-5, 5))">
+        <div class="item-icon ic-green">🔬</div>
+        <div class="item-title">Aplicaciones prácticas</div>
+        <div class="item-desc">DESeq2, edgeR, ComplexHeatmap, clusterProfiler. Flujo RNA-seq de principio a fin.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TABLA TEMA 3 -->
+  <div class="commands-section fade-in">
+    <div class="commands-header">
+      <svg width="14" height="14" fill="none" stroke="#8b949e" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <span>Funciones esenciales · Tema 3</span>
+    </div>
+    <table class="commands-table">
+      <thead><tr><th>Función</th><th>Sintaxis</th><th>Descripción</th><th>Bloque</th></tr></thead>
+      <tbody>
+        <tr><td><span class="cmd-name">BiocManager::install</span></td><td><span class="cmd-syntax">BiocManager::install("DESeq2")</span></td><td class="cmd-desc">Instala paquete de Bioconductor</td><td><span class="badge badge-nav">gestión</span></td></tr>
+        <tr><td><span class="cmd-name">BiocManager::valid</span></td><td><span class="cmd-syntax">BiocManager::valid()</span></td><td class="cmd-desc">Comprueba compatibilidad de paquetes</td><td><span class="badge badge-nav">gestión</span></td></tr>
+        <tr><td><span class="cmd-name">SummarizedExperiment</span></td><td><span class="cmd-syntax">SummarizedExperiment(assays, colData)</span></td><td class="cmd-desc">Crea objeto SE con matriz + metadatos</td><td><span class="badge badge-view">estructuras</span></td></tr>
+        <tr><td><span class="cmd-name">assay / colData</span></td><td><span class="cmd-syntax">assay(se, "counts")</span></td><td class="cmd-desc">Accede a matriz de datos / metadatos</td><td><span class="badge badge-view">estructuras</span></td></tr>
+        <tr><td><span class="cmd-name">browseVignettes</span></td><td><span class="cmd-syntax">browseVignettes("DESeq2")</span></td><td class="cmd-desc">Abre las vignettes de un paquete</td><td><span class="badge badge-search">docs</span></td></tr>
+        <tr><td><span class="cmd-name">DESeq</span></td><td><span class="cmd-syntax">dds &lt;- DESeq(dds)</span></td><td class="cmd-desc">Análisis diferencial completo (DESeq2)</td><td><span class="badge badge-file">aplicación</span></td></tr>
+        <tr><td><span class="cmd-name">results</span></td><td><span class="cmd-syntax">results(dds, alpha=0.05)</span></td><td class="cmd-desc">Extrae tabla de resultados con FDR</td><td><span class="badge badge-file">aplicación</span></td></tr>
+        <tr><td><span class="cmd-name">plotPCA / plotMA</span></td><td><span class="cmd-syntax">plotPCA(vsd)</span></td><td class="cmd-desc">Visualización PCA / MA-plot</td><td><span class="badge badge-redir">visualización</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TEMA 4 -->
+  <div class="topic-card t4 fade-in" style="margin-top: 56px;">
+    <div class="topic-number">TEMA 04</div>
+    <h2>Bases de datos biológicos y recursos genómicos</h2>
+    <div class="content-grid">
+
+      <div class="content-item fade-in" style="--item-color: var(--cyan)"
+        data-topic="TEMA 04 · Bases de datos"
+        data-title="Bases de datos primarias vs secundarias"
+        data-color="cyan" data-lang="bash"
+        data-desc="Las bases de datos primarias almacenan datos originales depositados por los investigadores sin curaduría adicional (GenBank, PDB, SRA). Las secundarias derivan de las primarias añadiendo anotación, clasificación o análisis computacional o manual (UniProt/Swiss-Prot, Pfam, KEGG). La distinción es clave para evaluar la fiabilidad de los datos."
+        data-chips="bases primarias|bases secundarias|curación manual|curación automática|GenBank|UniProt|Swiss-Prot|TrEMBL"
+        data-cmds="wget URL:Descarga archivos de bases de datos|curl -O URL:Alternativa a wget|md5sum archivo:Verifica integridad del descargado"
+        data-example="# Ejemplo: UniProt Swiss-Prot (secundaria curada manualmente)
+# vs UniProt TrEMBL (secundaria curada automáticamente)
+
+# Descargar proteoma de Arabidopsis thaliana (revisado)
+wget 'https://rest.uniprot.org/uniprotkb/stream?\
+query=organism_id:3702+AND+reviewed:true\
+&format=fasta' -O arabidopsis_swissprot.fasta
+
+wc -l arabidopsis_swissprot.fasta
+# ~27.000 proteínas curadas manualmente">
+        <div class="item-icon ic-cyan">🗄️</div>
+        <div class="item-title">Bases de datos primarias vs secundarias</div>
+        <div class="item-desc">Datos originales (GenBank, PDB, SRA) frente a datos curados y anotados (UniProt, Pfam, KEGG).</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--blue)"
+        data-topic="TEMA 04 · Bases de datos"
+        data-title="Bases de datos de secuencias"
+        data-color="blue" data-lang="bash"
+        data-desc="El International Nucleotide Sequence Database Collaboration (INSDC) agrupa GenBank (NCBI, EE.UU.), EMBL-EBI (Europa) y DDBJ (Japón). Las tres sincronizan sus datos diariamente. Cada entrada tiene un accession number único. Los formatos principales son FASTA y GenBank flat file. SRA almacena datos brutos de secuenciación masiva."
+        data-chips="GenBank|EMBL-EBI|DDBJ|INSDC|accession number|FASTA|SRA|E-utilities|Entrez"
+        data-cmds="efetch -db nucleotide -id ACC:Descarga secuencia por accession|esearch -db nucleotide -query:Busca en GenBank|efetch -format fasta:Formato de salida FASTA|efetch -format gb:Formato GenBank flat file"
+        data-example="# Instalar Entrez Direct (NCBI CLI)
+# sh -c '$(curl -fsSL ftp://ftp.ncbi.nlm.nih.gov/...)'
+
+# Descargar mRNA de BRCA1 humano
+efetch -db nucleotide \
+       -id NM_007294 \
+       -format fasta > BRCA1_mRNA.fasta
+
+# Buscar secuencias rbcL de Arabidopsis
+esearch -db nucleotide \
+  -query 'Arabidopsis thaliana[Organism] AND rbcL[Gene]' \
+  | efetch -format fasta > rbcL.fasta">
+        <div class="item-icon ic-blue">🧾</div>
+        <div class="item-title">Bases de datos de secuencias</div>
+        <div class="item-desc">GenBank, EMBL-EBI, DDBJ y SRA. Descarga por accession con Entrez E-utilities.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--purple)"
+        data-topic="TEMA 04 · Bases de datos"
+        data-title="Navegadores genómicos"
+        data-color="purple" data-lang="r"
+        data-desc="Los navegadores genómicos permiten explorar visualmente el genoma de referencia con sus anotaciones. NCBI Genome Data Viewer y Ensembl son los principales para organismos modelo; UCSC Genome Browser destaca por la enorme colección de tracks de datos; Ensembl Plants está especializado en genomas vegetales. BioMart permite consultas programáticas a Ensembl."
+        data-chips="NCBI GDV|Ensembl|UCSC|Ensembl Plants|BioMart|tracks|liftover|GFF|BED|GTF"
+        data-cmds="useMart('ensembl'):Conecta a Ensembl BioMart|useDataset('hsapiens...'):Selecciona genoma|getBM(attributes, filters, values):Consulta BioMart|listDatasets(mart):Lista genomas disponibles"
+        data-example="library(biomaRt)
+
+# Conectar a Ensembl
+mart <- useMart('ensembl',
+        dataset = 'hsapiens_gene_ensembl')
+
+# Obtener coordenadas de genes
+genes <- getBM(
+  attributes = c('hgnc_symbol',
+                 'chromosome_name',
+                 'start_position',
+                 'end_position',
+                 'strand'),
+  filters = 'hgnc_symbol',
+  values  = c('BRCA1','TP53','EGFR'),
+  mart    = mart
+)">
+        <div class="item-icon ic-purple">🗺️</div>
+        <div class="item-title">Navegadores genómicos</div>
+        <div class="item-desc">NCBI GDV, Ensembl, UCSC, Ensembl Plants. Consultas programáticas con <code>biomaRt</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--orange)"
+        data-topic="TEMA 04 · Bases de datos"
+        data-title="Bases de datos bibliográficas"
+        data-color="orange" data-lang="bash"
+        data-desc="PubMed (NCBI) es la principal base de datos de literatura biomédica con más de 36 millones de registros. Europe PMC incluye preprints y datos enlazados. Las E-utilities de NCBI permiten automatizar búsquedas y descargas desde la línea de comandos o desde R con el paquete rentrez."
+        data-chips="PubMed|Europe PMC|MEDLINE|MeSH terms|E-utilities|DOI|PubMed Central|rentrez"
+        data-cmds="esearch -db pubmed -query:Busca en PubMed|efetch -db pubmed -format abstract:Descarga resúmenes|elink -target pmc:Enlaza a PubMed Central|xtract -pattern ... -element:Extrae campos XML"
+        data-example="# Buscar artículos CRISPR en plantas (2023-2025)
+esearch -db pubmed \
+  -query 'CRISPR[Title] AND plants[Title] \
+          AND 2023:2025[DP]' \
+  | efetch -format abstract > crispr_plants.txt
+
+# Contar resultados
+esearch -db pubmed \
+  -query 'RNA-seq AND Arabidopsis[Organism]' \
+  | xtract -pattern ENTREZ_DIRECT \
+           -element Count
+# 4821">
+        <div class="item-icon ic-orange">📚</div>
+        <div class="item-title">Bases de datos bibliográficas</div>
+        <div class="item-desc">PubMed, Europe PMC. Búsquedas automáticas con Entrez E-utilities y <code>rentrez</code>.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TABLA TEMA 4 -->
+  <div class="commands-section fade-in">
+    <div class="commands-header">
+      <svg width="14" height="14" fill="none" stroke="#8b949e" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <span>Recursos y comandos esenciales · Tema 4</span>
+    </div>
+    <table class="commands-table">
+      <thead><tr><th>Recurso / Herramienta</th><th>Acceso</th><th>Descripción</th><th>Tipo</th></tr></thead>
+      <tbody>
+        <tr><td><span class="cmd-name">GenBank</span></td><td><span class="cmd-syntax">ncbi.nlm.nih.gov/genbank</span></td><td class="cmd-desc">Base primaria de secuencias nucleotídicas (INSDC)</td><td><span class="badge badge-nav">primaria</span></td></tr>
+        <tr><td><span class="cmd-name">EMBL-EBI</span></td><td><span class="cmd-syntax">ebi.ac.uk</span></td><td class="cmd-desc">Base europea de secuencias (INSDC)</td><td><span class="badge badge-nav">primaria</span></td></tr>
+        <tr><td><span class="cmd-name">SRA</span></td><td><span class="cmd-syntax">ncbi.nlm.nih.gov/sra</span></td><td class="cmd-desc">Datos brutos de secuenciación masiva</td><td><span class="badge badge-nav">primaria</span></td></tr>
+        <tr><td><span class="cmd-name">UniProt</span></td><td><span class="cmd-syntax">uniprot.org</span></td><td class="cmd-desc">Swiss-Prot (curada) + TrEMBL (automática)</td><td><span class="badge badge-file">secundaria</span></td></tr>
+        <tr><td><span class="cmd-name">Ensembl</span></td><td><span class="cmd-syntax">ensembl.org</span></td><td class="cmd-desc">Navegador genómico + anotaciones</td><td><span class="badge badge-view">navegador</span></td></tr>
+        <tr><td><span class="cmd-name">UCSC Browser</span></td><td><span class="cmd-syntax">genome.ucsc.edu</span></td><td class="cmd-desc">Navegador genómico con miles de tracks</td><td><span class="badge badge-view">navegador</span></td></tr>
+        <tr><td><span class="cmd-name">Ensembl Plants</span></td><td><span class="cmd-syntax">plants.ensembl.org</span></td><td class="cmd-desc">Genomas de plantas modelo y cultivos</td><td><span class="badge badge-view">navegador</span></td></tr>
+        <tr><td><span class="cmd-name">efetch / esearch</span></td><td><span class="cmd-syntax">efetch -db nucleotide -id ACC</span></td><td class="cmd-desc">Descarga y búsqueda en NCBI desde terminal</td><td><span class="badge badge-search">CLI</span></td></tr>
+        <tr><td><span class="cmd-name">biomaRt</span></td><td><span class="cmd-syntax">getBM(attr, filters, values, mart)</span></td><td class="cmd-desc">Consultas a Ensembl desde R</td><td><span class="badge badge-redir">R pkg</span></td></tr>
+        <tr><td><span class="cmd-name">PubMed</span></td><td><span class="cmd-syntax">pubmed.ncbi.nlm.nih.gov</span></td><td class="cmd-desc">Literatura biomédica (36M+ registros)</td><td><span class="badge badge-search">biblio</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ── BLOQUE III ── -->
+<div class="section" style="padding-top: 0;">
+  <div class="section-label">// Bloque III</div>
+  <div class="section-title">Secuencias, genómica y datos ómicos</div>
+
+  <!-- TEMA 5 -->
+  <div class="topic-card t5 fade-in">
+    <div class="topic-number">TEMA 05</div>
+    <h2>Alineamientos de secuencias</h2>
+    <div class="content-grid">
+
+      <div class="content-item fade-in" style="--item-color: var(--green)"
+        data-topic="TEMA 05 · Alineamientos"
+        data-title="Homología"
+        data-color="green" data-lang="bash"
+        data-desc="La homología implica un origen evolutivo común y es una hipótesis, no un porcentaje. Los ortólogos son genes homólogos en diferentes especies originados por un evento de especiación (suelen tener la misma función). Los parálogos son homólogos dentro del mismo genoma, originados por duplicación génica (pueden divergir en función)."
+        data-chips="homología|ortólogos|parálogos|xenólogos|especiación|duplicación génica|identidad|similitud"
+        data-cmds="blastp -query prot.faa:BLAST proteínas|blastn -query gen.fna:BLAST nucleótidos|OrthoFinder:Asignación de ortólogos|eggNOG-mapper:Anotación funcional por ortología"
+        data-example="# Concepto clave:
+# identidad de secuencia ≠ homología
+# La homología es todo-o-nada (tienen o no tienen
+# un ancestro común); la identidad es un porcentaje.
+
+# Buscar ortólogos de BRCA1 en ratón
+blastp -query BRCA1_human.faa \
+       -db mouse_proteome.faa \
+       -outfmt 6 \
+       -evalue 1e-10 \
+       -out ortologos_BRCA1.txt
+
+head -3 ortologos_BRCA1.txt
+# qseqid  sseqid  pident  length  evalue  bitscore">
+        <div class="item-icon ic-green">🌿</div>
+        <div class="item-title">Homología</div>
+        <div class="item-desc">Ortólogos (especiación) vs parálogos (duplicación). Homología ≠ similitud de secuencia.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--blue)"
+        data-topic="TEMA 05 · Alineamientos"
+        data-title="Alineamientos locales y globales"
+        data-color="blue" data-lang="bash"
+        data-desc="El alineamiento global (Needleman-Wunsch) optimiza el alineamiento en toda la longitud de ambas secuencias; adecuado para secuencias similares de igual longitud. El alineamiento local (Smith-Waterman) identifica la región de mayor similitud dentro de secuencias, ideal para buscar dominios conservados en proteínas de distinto tamaño."
+        data-chips="Needleman-Wunsch|Smith-Waterman|gap penalty|matriz de sustitución|BLOSUM|PAM|alineamiento semi-global"
+        data-cmds="needle (EMBOSS):Alineamiento global par a par|water (EMBOSS):Alineamiento local par a par|blastp:Alineamiento local heurístico|pairwiseAlignment (Biostrings):Alineamiento en R"
+        data-example="# Alineamiento global con EMBOSS Needle
+needle -asequence BRCA1_human.faa \
+       -bsequence BRCA1_mouse.faa \
+       -gapopen 10 \
+       -gapextend 0.5 \
+       -outfile alineamiento_global.txt
+
+# Fragmento de resultado:
+# Identity:   1809/1884 (96.0%)
+# Similarity: 1847/1884 (98.0%)
+# Gaps:          16/1884 (0.9%)">
+        <div class="item-icon ic-blue">⇄</div>
+        <div class="item-title">Alineamientos locales y globales</div>
+        <div class="item-desc">Needleman-Wunsch (global) vs Smith-Waterman (local). Matrices de sustitución y penalización de gaps.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--purple)"
+        data-topic="TEMA 05 · Alineamientos"
+        data-title="Algoritmos de alineamiento"
+        data-color="purple" data-lang="bash"
+        data-desc="Smith-Waterman y Needleman-Wunsch son exactos pero lentos (O(n²)). Para búsquedas en grandes bases de datos se usan heurísticas como BLAST (Basic Local Alignment Search Tool), que busca primero palabras cortas (seeds) y luego extiende el alineamiento. FASTA es una alternativa más antigua pero comparable."
+        data-chips="BLAST|FASTA|heurística|seeds|extend|HSP|programación dinámica|DIAMOND"
+        data-cmds="blastp -query -db:BLAST proteínas contra BD|blastn -query -db:BLAST nucleótidos|makeblastdb -in:Crea base de datos BLAST|blastp -outfmt 6:Salida tabular|diamond blastp:BLAST ultra-rápido para proteínas"
+        data-example="# Crear base de datos BLAST local
+makeblastdb -in proteoma_arabidopsis.faa \
+            -dbtype prot \
+            -out arabidopsis_db
+
+# Búsqueda BLAST
+blastp -query proteina_consulta.faa \
+       -db arabidopsis_db \
+       -evalue 1e-5 \
+       -num_threads 4 \
+       -outfmt '6 qseqid sseqid pident length evalue' \
+       -out resultados_blast.txt
+
+wc -l resultados_blast.txt">
+        <div class="item-icon ic-purple">⚡</div>
+        <div class="item-title">Algoritmos de alineamiento</div>
+        <div class="item-desc">Programación dinámica exacta vs heurísticas (BLAST, DIAMOND). Seeds, extensión y HSPs.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--orange)"
+        data-topic="TEMA 05 · Alineamientos"
+        data-title="Significación estadística"
+        data-color="orange" data-lang="bash"
+        data-desc="El E-value (expectation value) indica el número de alineamientos igual de buenos que esperaríamos encontrar por azar en una base de datos del mismo tamaño. Un E-value de 1e-5 significa que esperamos 0.00001 coincidencias al azar. El bit score es una medida normalizada del score de alineamiento, independiente del tamaño de la base de datos."
+        data-chips="E-value|bit score|p-value|Karlin-Altschul|tamaño de BD|matriz de puntuación|score bruto"
+        data-cmds="blastp -evalue 1e-5:Umbral de E-value|blastp -outfmt 6:Incluye E-value y bitscore|-max_target_seqs 10:Máximo de resultados por consulta"
+        data-example="# Interpretar resultados BLAST (formato tabular -outfmt 6)
+# qseqid sseqid pident length evalue bitscore
+# gen1   sp|P38398|  96.0  1884   0.0    3421
+# gen1   sp|P06400|  32.1   412  2e-45   156
+# gen1   sp|Q9Y6K9|  28.4   389  8e-12    87
+
+# Regla práctica:
+# E-value < 1e-50  → homología casi segura
+# E-value < 1e-5   → probable homología
+# E-value > 0.01   → resultado dudoso
+
+awk '$5 < 1e-5' resultados_blast.txt | wc -l">
+        <div class="item-icon ic-orange">📊</div>
+        <div class="item-title">Significación estadística</div>
+        <div class="item-desc">E-value, bit score y estadística de Karlin-Altschul. Cómo interpretar resultados BLAST.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--cyan)"
+        data-topic="TEMA 05 · Alineamientos"
+        data-title="Alineamientos múltiples"
+        data-color="cyan" data-lang="bash"
+        data-desc="Los alineamientos múltiples de secuencias (MSA) alinean simultáneamente tres o más secuencias relacionadas. Son la base para la construcción de árboles filogenéticos, la detección de posiciones conservadas y el diseño de primers. MUSCLE y MAFFT son los algoritmos más usados; Clustal Omega destaca por su escalabilidad."
+        data-chips="MSA|MUSCLE|MAFFT|Clustal Omega|MAFFT|Progressive alignment|columnas conservadas|FASTA multi"
+        data-cmds="muscle -align input.faa -output MSA.afa:Alinea con MUSCLE|mafft --auto input.faa > MSA.fasta:Alinea con MAFFT|clustalo -i input.faa -o MSA.fasta:Clustal Omega|trimal -in MSA.fasta:Elimina columnas mal alineadas"
+        data-example="# Alineamiento múltiple con MAFFT
+mafft --auto --thread 4 \
+      secuencias_BRCA1.faa > MSA_BRCA1.fasta
+
+# Ver estadísticas del alineamiento
+grep -c '>' MSA_BRCA1.fasta    # nº secuencias
+
+# Limpiar columnas con muchos gaps
+trimal -in  MSA_BRCA1.fasta \
+       -out MSA_BRCA1_trim.fasta \
+       -automated1
+
+# Construir árbol filogenético (IQ-TREE)
+iqtree2 -s MSA_BRCA1_trim.fasta -m TEST -B 1000">
+        <div class="item-icon ic-cyan">🌲</div>
+        <div class="item-title">Alineamientos múltiples de secuencias</div>
+        <div class="item-desc">MUSCLE, MAFFT, Clustal Omega. Base para filogenética y detección de posiciones conservadas.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--green)"
+        data-topic="TEMA 05 · Alineamientos"
+        data-title="Anotación funcional de secuencias"
+        data-color="green" data-lang="bash"
+        data-desc="La anotación funcional asigna función biológica a secuencias desconocidas mediante comparación con bases de datos de función conocida. Las principales estrategias son: búsqueda de homología (BLAST + UniProt), búsqueda de dominios proteicos (InterPro, Pfam, HMMER) y anotación por GO terms o rutas metabólicas (KEGG)."
+        data-chips="InterPro|Pfam|HMMER|GO terms|KEGG|eggNOG|anotación funcional|dominios proteicos"
+        data-cmds="hmmbuild:Construye perfil HMM de familia|hmmscan -db Pfam:Busca dominios en Pfam|interproscan.sh:Anotación multifuente|eggnog-mapper:Anotación GO + KEGG + ortología"
+        data-example="# Buscar dominios en Pfam con HMMER
+hmmscan --domtblout dominios.txt \
+        --cpu 4 \
+        Pfam-A.hmm \
+        proteinas_nuevas.faa
+
+# Filtrar dominios significativos
+awk '$7 < 1e-5' dominios.txt > dominios_sig.txt
+
+# Ver qué dominios aparecen más
+cut -f1 dominios_sig.txt | sort | uniq -c | sort -rn | head
+# 42 PF00069.fam   # Protein kinase domain
+# 28 PF00076.fam   # RRM RNA-binding domain">
+        <div class="item-icon ic-green">🏷️</div>
+        <div class="item-title">Anotación funcional de secuencias</div>
+        <div class="item-desc">InterPro, Pfam, HMMER, eggNOG. GO terms y rutas KEGG a partir de homología y dominios.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TABLA TEMA 5 -->
+  <div class="commands-section fade-in">
+    <div class="commands-header">
+      <svg width="14" height="14" fill="none" stroke="#8b949e" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <span>Herramientas esenciales · Tema 5</span>
+    </div>
+    <table class="commands-table">
+      <thead><tr><th>Herramienta</th><th>Comando / Uso</th><th>Descripción</th><th>Bloque</th></tr></thead>
+      <tbody>
+        <tr><td><span class="cmd-name">blastp / blastn</span></td><td><span class="cmd-syntax">blastp -query q.faa -db bd</span></td><td class="cmd-desc">BLAST proteínas / nucleótidos contra BD</td><td><span class="badge badge-search">BLAST</span></td></tr>
+        <tr><td><span class="cmd-name">makeblastdb</span></td><td><span class="cmd-syntax">makeblastdb -in db.faa -dbtype prot</span></td><td class="cmd-desc">Crea una base de datos BLAST local</td><td><span class="badge badge-search">BLAST</span></td></tr>
+        <tr><td><span class="cmd-name">DIAMOND</span></td><td><span class="cmd-syntax">diamond blastp -q q.faa -d db</span></td><td class="cmd-desc">BLAST ultrarrápido para proteínas (100×)</td><td><span class="badge badge-search">BLAST</span></td></tr>
+        <tr><td><span class="cmd-name">needle / water</span></td><td><span class="cmd-syntax">needle -asequence a -bsequence b</span></td><td class="cmd-desc">Alineamiento global / local (EMBOSS)</td><td><span class="badge badge-nav">alineamiento</span></td></tr>
+        <tr><td><span class="cmd-name">MAFFT</span></td><td><span class="cmd-syntax">mafft --auto input.faa > msa.fasta</span></td><td class="cmd-desc">Alineamiento múltiple rápido y preciso</td><td><span class="badge badge-file">MSA</span></td></tr>
+        <tr><td><span class="cmd-name">MUSCLE</span></td><td><span class="cmd-syntax">muscle -align in.faa -output out.afa</span></td><td class="cmd-desc">Alineamiento múltiple de proteínas</td><td><span class="badge badge-file">MSA</span></td></tr>
+        <tr><td><span class="cmd-name">hmmscan</span></td><td><span class="cmd-syntax">hmmscan Pfam-A.hmm proteinas.faa</span></td><td class="cmd-desc">Búsqueda de dominios proteicos (Pfam)</td><td><span class="badge badge-redir">anotación</span></td></tr>
+        <tr><td><span class="cmd-name">InterProScan</span></td><td><span class="cmd-syntax">interproscan.sh -i proteinas.faa</span></td><td class="cmd-desc">Anotación multifuente (Pfam, PRINTS, PANTHER…)</td><td><span class="badge badge-redir">anotación</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TEMA 6 -->
+  <div class="topic-card t6 fade-in" style="margin-top: 56px;">
+    <div class="topic-number">TEMA 06</div>
+    <h2>Secuenciación masiva y análisis de datos ómicos</h2>
+    <div class="content-grid">
+
+      <div class="content-item fade-in" style="--item-color: var(--blue)"
+        data-topic="TEMA 06 · NGS"
+        data-title="Principios de secuenciación masiva"
+        data-color="blue" data-lang="bash"
+        data-desc="La secuenciación masiva (NGS, Next Generation Sequencing) genera millones de lecturas cortas en paralelo. A diferencia de Sanger (1 secuencia/reacción), NGS secuencia toda la librería simultáneamente. El principio básico de Illumina es secuenciación por síntesis (SBS): fluoróforos incorporados indican la base añadida en cada ciclo."
+        data-chips="NGS|Illumina|SBS|librería|cluster|paired-end|lecturas cortas|throughput|cobertura"
+        data-cmds="fastq-dump -I SRR...:Descarga datos de SRA|prefetch SRR...:Descarga más rápida de SRA|vdb-config:Configura SRA toolkit"
+        data-example="# Descargar datos de SRA (RNA-seq de Arabidopsis)
+prefetch SRR6040585
+
+# Convertir a FASTQ (paired-end)
+fastq-dump --split-files \
+           --gzip \
+           SRR6040585
+
+ls -lh SRR6040585*.fastq.gz
+# SRR6040585_1.fastq.gz  2.1G  (R1 - forward)
+# SRR6040585_2.fastq.gz  2.1G  (R2 - reverse)">
+        <div class="item-icon ic-blue">🔭</div>
+        <div class="item-title">Principios de secuenciación masiva</div>
+        <div class="item-desc">Secuenciación por síntesis (Illumina), lecturas cortas en paralelo, cobertura y profundidad.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--purple)"
+        data-topic="TEMA 06 · NGS"
+        data-title="Plataformas de secuenciación"
+        data-color="purple" data-lang="bash"
+        data-desc="Illumina domina con lecturas cortas (150 bp, alta precisión, bajo coste). Oxford Nanopore (ONT) y PacBio generan lecturas largas (10-100 kb) útiles para resolver regiones repetidas y ensamblar genomas complejos, aunque con mayor tasa de error. MGI/BGI es una alternativa emergente más económica."
+        data-chips="Illumina|Oxford Nanopore|PacBio HiFi|MGI-BGI|lecturas cortas|lecturas largas|tasa de error|coste por Gb"
+        data-cmds="Plataformas y sus formatos de salida típicos"
+        data-example="# Illumina → lecturas cortas, alta calidad
+# Formato: FASTQ con Phred33
+# @SRR..1 length=150
+# ATGCGATCGATCGATCGATCG...
+# +
+# IIIIIIIIIIIIIIIIIIIII...
+
+# Oxford Nanopore → lecturas largas
+# Formato: FASTQ o FAST5
+# Longitudes típicas: 1 kb – 100 kb
+# Precisión: ~95-99% (Q20)
+
+# PacBio HiFi → lecturas largas y precisas
+# CCS reads: ~99.9% precisión, 10-20 kb">
+        <div class="item-icon ic-purple">🧪</div>
+        <div class="item-title">Plataformas de secuenciación</div>
+        <div class="item-desc">Illumina (short reads) vs ONT y PacBio (long reads). Comparativa de precisión, longitud y coste.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--green)"
+        data-topic="TEMA 06 · NGS"
+        data-title="Calidad de secuencias"
+        data-color="green" data-lang="bash"
+        data-desc="La calidad de una lectura se mide con la escala Phred (Q): Q20 = 1% error, Q30 = 0.1% error. FastQC genera informes de calidad por posición, distribución de bases, contenido de adaptadores y contaminación. Trimmomatic y fastp eliminan adaptadores y recortan regiones de baja calidad."
+        data-chips="Phred score|Q20|Q30|FastQC|MultiQC|Trimmomatic|fastp|adaptadores|per-base quality"
+        data-cmds="fastqc archivo.fastq.gz:Análisis de calidad|multiqc .:Agrega múltiples informes|fastp -i R1 -I R2:Trimming + QC en paralelo|trimmomatic PE:Trimming paired-end"
+        data-example="# Control de calidad
+fastqc SRR6040585_1.fastq.gz \
+       SRR6040585_2.fastq.gz \
+       -o qc_reports/ -t 4
+
+# Agregar todos los informes
+multiqc qc_reports/ -o multiqc_report/
+
+# Trimming con fastp (más rápido que Trimmomatic)
+fastp -i SRR6040585_1.fastq.gz \
+      -I SRR6040585_2.fastq.gz \
+      -o R1_clean.fastq.gz \
+      -O R2_clean.fastq.gz \
+      --thread 4 --html fastp_report.html">
+        <div class="item-icon ic-green">✅</div>
+        <div class="item-title">Calidad de secuencias</div>
+        <div class="item-desc">Escala Phred, FastQC, MultiQC. Trimming con fastp y Trimmomatic.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--orange)"
+        data-topic="TEMA 06 · NGS"
+        data-title="Ensamblaje de genomas"
+        data-color="orange" data-lang="bash"
+        data-desc="El ensamblaje de novo construye el genoma desde cero uniendo lecturas solapantes (mediante grafos de Bruijn). La resecuenciación alinea lecturas contra un genoma de referencia ya conocido (más rápido). Las métricas de calidad del ensamblaje incluyen N50 (longitud del contig que acumula el 50% del genoma) y el porcentaje de completitud (BUSCO)."
+        data-chips="de novo|resecuenciación|grafo de Bruijn|contigs|scaffolds|N50|BUSCO|SPAdes|BWA|HISAT2"
+        data-cmds="SPAdes.py --isolate:Ensamblaje de genoma bacteriano|BWA-MEM2 -x genome:Alineamiento de lecturas|samtools sort:Ordena BAM|samtools index:Indexa BAM|BUSCO -m genome:Evalúa completitud"
+        data-example="# Ensamblaje de novo (bacteria)
+spades.py --isolate \
+          -1 R1_clean.fastq.gz \
+          -2 R2_clean.fastq.gz \
+          -o ensamblaje/ \
+          --threads 8
+
+# Métricas del ensamblaje
+quast.py ensamblaje/scaffolds.fasta \
+         -o quast_report/
+
+# N50, L50, nº contigs, tamaño total
+# Evaluar completitud con BUSCO
+busco -i scaffolds.fasta -m genome \
+      -l bacteria_odb10 -o busco_out/">
+        <div class="item-icon ic-orange">🧩</div>
+        <div class="item-title">Ensamblaje de genomas</div>
+        <div class="item-desc">De novo (SPAdes) vs resecuenciación (BWA). N50, BUSCO y evaluación de ensamblajes.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+      <div class="content-item fade-in" style="--item-color: var(--cyan)"
+        data-topic="TEMA 06 · NGS"
+        data-title="Análisis de expresión génica"
+        data-color="cyan" data-lang="bash"
+        data-desc="El análisis RNA-seq cuantifica la expresión génica a nivel de transcriptoma. El flujo de trabajo típico es: QC → alineamiento (HISAT2 / STAR) → cuantificación (featureCounts / HTSeq) → normalización → análisis diferencial (DESeq2 / edgeR) → anotación funcional (clusterProfiler). Salmon y Kallisto realizan pseudo-alineamiento ultrarrápido."
+        data-chips="RNA-seq|HISAT2|STAR|Salmon|Kallisto|featureCounts|DESeq2|TPM|FPKM|conteos crudos"
+        data-cmds="HISAT2 -x índice -1 R1 -2 R2:Alineamiento al genoma|featureCounts -a GTF:Cuantificación por gen|salmon quant:Cuantificación por pseudo-alineamiento|samtools flagstat:Estadísticas de alineamiento"
+        data-example="# 1. Construir índice del genoma
+hisat2-build genoma.fasta indice_hisat2/
+
+# 2. Alinear lecturas
+hisat2 -x indice_hisat2/ \
+       -1 R1_clean.fastq.gz \
+       -2 R2_clean.fastq.gz \
+       -p 8 | samtools sort -o muestra.bam
+
+samtools index muestra.bam
+samtools flagstat muestra.bam
+
+# 3. Cuantificar (featureCounts)
+featureCounts -a anotacion.gtf \
+              -o conteos.txt \
+              -T 4 -p *.bam">
+        <div class="item-icon ic-cyan">📈</div>
+        <div class="item-title">Análisis de expresión génica</div>
+        <div class="item-desc">RNA-seq: QC → HISAT2/STAR → featureCounts → DESeq2. Salmon y Kallisto para pseudo-alineamiento.</div>
+        <span class="click-hint">ver más →</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TABLA TEMA 6 -->
+  <div class="commands-section fade-in">
+    <div class="commands-header">
+      <svg width="14" height="14" fill="none" stroke="#8b949e" stroke-width="2" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      <span>Herramientas esenciales · Tema 6</span>
+    </div>
+    <table class="commands-table">
+      <thead><tr><th>Herramienta</th><th>Comando</th><th>Descripción</th><th>Etapa</th></tr></thead>
+      <tbody>
+        <tr><td><span class="cmd-name">fastqc</span></td><td><span class="cmd-syntax">fastqc *.fastq.gz -o qc/</span></td><td class="cmd-desc">Control de calidad de lecturas FASTQ</td><td><span class="badge badge-nav">QC</span></td></tr>
+        <tr><td><span class="cmd-name">multiqc</span></td><td><span class="cmd-syntax">multiqc qc/ -o report/</span></td><td class="cmd-desc">Agrega informes de QC de múltiples muestras</td><td><span class="badge badge-nav">QC</span></td></tr>
+        <tr><td><span class="cmd-name">fastp</span></td><td><span class="cmd-syntax">fastp -i R1 -I R2 -o R1c -O R2c</span></td><td class="cmd-desc">Trimming de adaptadores y baja calidad</td><td><span class="badge badge-nav">QC</span></td></tr>
+        <tr><td><span class="cmd-name">HISAT2</span></td><td><span class="cmd-syntax">hisat2 -x idx -1 R1 -2 R2</span></td><td class="cmd-desc">Alineamiento de RNA-seq al genoma (splice-aware)</td><td><span class="badge badge-file">alineamiento</span></td></tr>
+        <tr><td><span class="cmd-name">STAR</span></td><td><span class="cmd-syntax">STAR --runMode alignReads ...</span></td><td class="cmd-desc">Alineamiento ultrarrápido de RNA-seq</td><td><span class="badge badge-file">alineamiento</span></td></tr>
+        <tr><td><span class="cmd-name">BWA-MEM2</span></td><td><span class="cmd-syntax">bwa-mem2 mem ref.fa R1 R2</span></td><td class="cmd-desc">Alineamiento de DNA-seq (WGS, ChIP-seq)</td><td><span class="badge badge-file">alineamiento</span></td></tr>
+        <tr><td><span class="cmd-name">featureCounts</span></td><td><span class="cmd-syntax">featureCounts -a ann.gtf -o out *.bam</span></td><td class="cmd-desc">Cuantificación de expresión por gen</td><td><span class="badge badge-view">cuantificación</span></td></tr>
+        <tr><td><span class="cmd-name">Salmon</span></td><td><span class="cmd-syntax">salmon quant -i idx -l A -1 R1 -2 R2</span></td><td class="cmd-desc">Cuantificación ultrarrápida (pseudo-alineamiento)</td><td><span class="badge badge-view">cuantificación</span></td></tr>
+        <tr><td><span class="cmd-name">SPAdes</span></td><td><span class="cmd-syntax">spades.py --isolate -1 R1 -2 R2</span></td><td class="cmd-desc">Ensamblaje de genomas bacterianos/virales</td><td><span class="badge badge-redir">ensamblaje</span></td></tr>
+        <tr><td><span class="cmd-name">BUSCO</span></td><td><span class="cmd-syntax">busco -i scaffolds.fasta -m genome</span></td><td class="cmd-desc">Evaluación de completitud del ensamblaje</td><td><span class="badge badge-search">evaluación</span></td></tr>
+        <tr><td><span class="cmd-name">samtools</span></td><td><span class="cmd-syntax">samtools sort / index / flagstat</span></td><td class="cmd-desc">Manipulación de archivos BAM/SAM</td><td><span class="badge badge-search">utilidades</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>bioinformatica · guía docente visual · UCO · 2025–2026</footer>
+
+<!-- ── DRAWER ── -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-top">
+    <div class="drawer-topic-label" id="d-topic"></div>
+    <div class="drawer-title" id="d-title"></div>
+    <div class="drawer-close" id="d-close">✕</div>
+  </div>
+  <div class="drawer-body" id="d-body"></div>
+</div>
+
+<script>
+  /* ── Scroll fade-in ── */
+  const obs = new IntersectionObserver(es => {
+    es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+  }, { threshold: 0.07 });
+  document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+  /* ── Drawer logic ── */
+  const overlay = document.getElementById('overlay');
+  const drawer  = document.getElementById('drawer');
+  const dTopic  = document.getElementById('d-topic');
+  const dTitle  = document.getElementById('d-title');
+  const dBody   = document.getElementById('d-body');
+  const dClose  = document.getElementById('d-close');
+
+  const colorMap = {
+    green:  'var(--green)',
+    blue:   'var(--blue)',
+    purple: 'var(--purple)',
+    orange: 'var(--orange)',
+    cyan:   'var(--cyan)'
+  };
+
+  let activeCard = null;
+
+  function openDrawer(card) {
+    if (activeCard) activeCard.classList.remove('active');
+    activeCard = card;
+    card.classList.add('active');
+
+    const color   = colorMap[card.dataset.color] || 'var(--green)';
+    const chips   = (card.dataset.chips || '').split('|').filter(Boolean);
+    const cmds    = (card.dataset.cmds  || '').split('|').filter(Boolean);
+    const isR     = card.dataset.lang === 'r';
+    const example = card.dataset.example || '';
+
+    dTopic.textContent = card.dataset.topic;
+    dTopic.style.color = color;
+    dTitle.textContent = card.dataset.title;
+
+    // Build prompt class for mini terminal
+    const promptClass = isR ? 'mt-rprompt' : 'mt-prompt';
+    const promptChar  = isR ? '> ' : '$ ';
+
+    // Format example lines
+    const exLines = example.split('\n').map(line => {
+      if (!line.trim()) return '<br>';
+      const isComment  = line.trim().startsWith('#');
+      const isPrompt   = !isR && line.trim().startsWith('$');
+      const isRPrompt  = isR  && !isComment && !line.startsWith(' ') && !line.startsWith('\t') && !line.startsWith('#');
+      const isOutput   = !isComment && !isPrompt && !isRPrompt;
+
+      if (isComment)  return `<div><span class="mt-comment">${esc(line)}</span></div>`;
+      if (isPrompt) {
+        const rest = line.replace(/^\$\s*/, '');
+        return `<div><span class="mt-prompt">$ </span><span class="mt-cmd">${esc(rest)}</span></div>`;
+      }
+      if (isRPrompt)  return `<div><span class="mt-rprompt">&gt; </span><span class="mt-cmd">${esc(line)}</span></div>`;
+      if (isOutput)   return `<div><span class="mt-out">${esc(line)}</span></div>`;
+    }).join('');
+
+    dBody.innerHTML = `
+      ${ card.dataset.desc ? `
+      <div>
+        <div class="d-section-title">Descripción</div>
+        <p class="d-desc">${esc(card.dataset.desc)}</p>
+      </div>` : '' }
+
+      ${ chips.length ? `
+      <div>
+        <div class="d-section-title">Conceptos clave</div>
+        <div class="chips">${ chips.map(c => `<span class="chip">${esc(c)}</span>`).join('') }</div>
+      </div>` : '' }
+
+      ${ cmds.length ? `
+      <div>
+        <div class="d-section-title">${isR ? 'Funciones' : 'Comandos'}</div>
+        <div class="cmd-list">
+          ${ cmds.map(c => {
+            const [name, ...rest] = c.split(':');
+            return `<div class="cmd-row ${ isR ? 'r-purple' : '' }">
+              <span class="cr-name">${esc(name)}</span>
+              <span class="cr-desc">${esc(rest.join(':'))}</span>
+            </div>`;
+          }).join('') }
+        </div>
+      </div>` : '' }
+
+      ${ example ? `
+      <div>
+        <div class="d-section-title">Ejemplo</div>
+        <div class="mini-term">
+          <div class="mini-term-header">
+            <div class="mini-dot" style="background:#ff5f57"></div>
+            <div class="mini-dot" style="background:#febc2e"></div>
+            <div class="mini-dot" style="background:#28c840"></div>
+            <span>${isR ? 'R Console' : 'bash'}</span>
+          </div>
+          <div class="mini-term-body">${exLines}</div>
+        </div>
+      </div>` : '' }
+    `;
+
+    overlay.classList.add('open');
+    drawer.classList.add('open');
+    dBody.scrollTop = 0;
+  }
+
+  function closeDrawer() {
+    overlay.classList.remove('open');
+    drawer.classList.remove('open');
+    if (activeCard) { activeCard.classList.remove('active'); activeCard = null; }
+  }
+
+  function esc(str) {
+    return String(str)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
+
+  document.querySelectorAll('.content-item[data-title]').forEach(card => {
+    card.addEventListener('click', () => {
+      if (activeCard === card) { closeDrawer(); return; }
+      openDrawer(card);
+    });
+  });
+
+  dClose.addEventListener('click', closeDrawer);
+  overlay.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+</script>
+</body>
+</html>
