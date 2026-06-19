@@ -1498,10 +1498,12 @@ featureCounts -a anotacion.gtf \
         <div class="d-section-title">${isR ? 'Funciones' : 'Comandos'}</div>
         <div class="cmd-list">
           ${ cmds.map(c => {
-            const [name, ...rest] = c.split(':');
+            const sepIdx = c.search(/(?<!:):(?!:)/);
+            const name = sepIdx >= 0 ? c.slice(0, sepIdx) : c;
+            const desc = sepIdx >= 0 ? c.slice(sepIdx + 1) : '';
             return `<div class="cmd-row ${ isR ? 'r-purple' : '' }">
               <span class="cr-name">${esc(name)}</span>
-              <span class="cr-desc">${esc(rest.join(':'))}</span>
+              <span class="cr-desc">${esc(desc)}</span>
             </div>`;
           }).join('') }
         </div>
